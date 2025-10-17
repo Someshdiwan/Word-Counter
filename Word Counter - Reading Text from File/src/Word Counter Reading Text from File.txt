@@ -1,0 +1,94 @@
+                          🧩 DESIGN PRINCIPLES & PATTERNS — WORD COUNTER
+
+| Project purpose: Read text from file, offer two tokenization methods (Split, Regex), and     |
+| compute total words + frequency of a user-specified word.                                    |
++----------------------------------------------------------------------------------------------+
+| ✅ MVC (lightweight console mapping)                                                         |
+|    • Model:  In-memory `ArrayList<String>` of normalized words (splitWords / regexWords).    |
+|    • View:   Console I/O (System.out + Scanner) — displays results and prompts.              |
+|    • Controller: main() orchestrates file read → parsing → user input → display.             |
+|    • (⚠️) This is a single-file console app — MVC is implicit rather than enforced.          |
++----------------------------------------------------------------------------------------------+
+| ✅ KISS (Keep It Simple, Stupid)                                                             |
+|    • Single responsibility flow for each stage (read → parse → query → display).             |
+|    • No premature abstraction — ideal for a small utility.                                   |
++----------------------------------------------------------------------------------------------+
+| ✅ DRY (Don't Repeat Yourself)                                                               |
+|    • Tokenization and frequency logic are factored into reusable methods (`countWordsSplit`, |
+|      `countWordsRegex`, `wordFrequency`, `displayResults`) — good reuse.                     |
+|    • (✅) Normalization helper `normalizeToken()` centralizes cleaning for split method.     |
++----------------------------------------------------------------------------------------------+
+| ⚠️ SRP (Single Responsibility Principle) — method vs. file-level                            |
+|    • Methods have clear responsibilities (good).                                            |
+|    • (⚠️) `WordCounter` class bundles I/O, parsing, and business logic in one file —        |
+|      extract `FileReader`, `Tokenizer`, `Analyzer`, and `UI` for stronger SRP.              |
++----------------------------------------------------------------------------------------------+
+| ✅ Encapsulation (partial)                                                                  |
+|    • Internal lists are local to methods or returned as immutable-sounding collections.     |
+|    • (🟡) For stronger encapsulation, hide parsing internals behind `Tokenizer` interface.  |
++----------------------------------------------------------------------------------------------+
+| 🟡 Design Patterns — present / suggested                                                    |
+|    • Procedural Script (Present): main() is the orchestrator — fine for CLI tool.           |
+|    • Strategy Pattern (Suggested): Add `Tokenizer` interface with `SplitTokenizer` and      |
+|      `RegexTokenizer` implementations; main picks strategy at runtime.                      |
+|    • Factory (Suggested): `TokenizerFactory` to choose tokenizer by name/options.           |
+|    • Adapter (Optional): If input sources vary (DB, URL, STDIN), adapters unify access.     |
+|    • Singleton (Not necessary): No global state requiring single-instance lifecycle.        |
++----------------------------------------------------------------------------------------------+
+| ✅ Validation                                                                                |
+|    • File read error handled (empty text -> exit).                                           |
+|    • Token normalization removes leading/trailing punctuation; search is case-insensitive.   |
++----------------------------------------------------------------------------------------------+
+| ✅ Testability (good)                                                                        |
+|    • Parsing logic separated into small pure methods returning lists — easy to unit test.    |
++----------------------------------------------------------------------------------------------+
+| Quick mapping — Feature → Method (verified)                                                |
+|  • Read file                   -> readFile(filepath)                                       |
+|  • Split tokenization          -> countWordsSplit(text)                                    |
+|  • Regex tokenization          -> countWordsRegex(text)                                    |
+|  • Normalize tokens            -> normalizeToken(token)                                    |
+|  • Word frequency              -> wordFrequency(words, searchWord)                         |
+|  • Display results             -> displayResults(method, words, searchWord)                |
+|  • Program orchestration       -> main()                                                   |
++----------------------------------------------------------------------------------------------+
+| Short, pragmatic recommendations:                                                           |
+| 1) Introduce `Tokenizer` interface + two implementations (Strategy) — makes adding new      |
+|    tokenizers trivial.                                                                      |
+| 2) Move file path & I/O into a `FileReader` helper to isolate side-effects for tests.       |
+| 3) Consider returning `List<String>` instead of `ArrayList<String>` for abstraction.        |
+| 4) Keep KISS: only refactor to patterns if you need more tokenizers/sources.                |
+
+
+
+|                                ASCII FLOWCHART — Word Counter Runtime                        |
+| [Start]                                                                                      |
+|   |                                                                                          |
+|   v                                                                                          |
+| [readFile(filepath)]  --(exists & readable?)--> [text]  --(empty?)-> (exit w/ message)       |
+|   |                                                                                          |
+|   v                                                                                          |
+| [Print file preview (optional)]                                                              |
+|   |                                                                                          |
+|   v                                                                                          |
+| [Prompt user] -> "Enter search word"                                                         |
+|   |                                                                                          |
+|   v                                                                                          |
+| +-------------------------------+     +-------------------------------+                      |
+| |  Split Method (countWordsSplit)|    | Regex Method (countWordsRegex)  |                    |
+| |  - split on whitespace         |    |  - Pattern.compile("\\b\\w+\\b")|                    |
+| |  - normalize tokens            |    |  - matcher.find() -> group()    |                    |
+| |  -> returns List<String>       |    |  -> returns List<String>        |                    |
+| +---------------+---------------+    +---------------+---------------+                       |
+|                 |                                        |                                   |
+|                 v                                        v                                   |
+|         [wordFrequency(list, searchWord)]         [wordFrequency(list, searchWord)]          |
+|                 |                                        |                                   |
+|                 v                                        v                                   |
+|          [displayResults("Split", ...)]          [displayResults("Regex", ...)]              |
+|                 |                                        |                                   |
+|                 +-----------------------> [Exit / close scanner] <---------------------------+
+|                                                                                              |
++----------------------------------------------------------------------------------------------+
+| Sequence for a single method (e.g., Regex path):                                             |
+| main -> readFile -> countWordsRegex -> wordFrequency -> displayResults -> scanner.close      |
++----------------------------------------------------------------------------------------------+
