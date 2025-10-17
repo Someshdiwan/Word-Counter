@@ -1,0 +1,3 @@
+Java is a high-level, object-oriented programming language known for its "write once, run anywhere" capability,
+powered by the Java Virtual Machine (JVM). With strong memory management, multithreading support, and a rich ecosystem,
+Java excels in performance, security, and scalability.
